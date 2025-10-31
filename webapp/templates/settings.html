@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Clash Emote Detector+</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Modern Theme System - Inspired by GitHub, Tailwind UI, and Material Design */
+        :root[data-theme="light"] {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #f1f5f9;
+            --bg-elevated: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-tertiary: #64748b;
+            --border-color: #e2e8f0;
+            --border-hover: #cbd5e1;
+            --accent-primary: #3b82f6;
+            --accent-hover: #2563eb;
+            --accent-light: #dbeafe;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+        }
+
+        :root[data-theme="dark"] {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --bg-elevated: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-tertiary: #94a3b8;
+            --border-color: #334155;
+            --border-hover: #475569;
+            --accent-primary: #3b82f6;
+            --accent-hover: #60a5fa;
+            --accent-light: #1e40af;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.5);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.5);
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .card {
+            background-color: var(--bg-elevated);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--border-hover);
+        }
+
+        .btn-primary {
+            background-color: var(--accent-primary);
+            color: white;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+            transform: scale(1.02);
+        }
+
+        .toggle-checkbox:checked {
+            background-color: var(--accent-primary);
+            border-color: var(--accent-primary);
+        }
+
+        .toggle-checkbox:checked + .toggle-label {
+            left: 1.5rem;
+        }
+
+        .toggle-label {
+            transition: left 0.2s ease-in-out;
+            background-color: var(--border-color);
+        }
+
+        .theme-btn {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .theme-btn:hover {
+            background-color: var(--bg-tertiary);
+            border-color: var(--border-hover);
+        }
+
+        .theme-btn.active {
+            background-color: var(--accent-light);
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        :root[data-theme="light"] .theme-btn.active {
+            background-color: var(--accent-light);
+            color: var(--accent-primary);
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            background-color: var(--bg-secondary);
+            transition: all 0.2s ease;
+        }
+
+        .nav-link:hover {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .nav-link.active {
+            background-color: var(--accent-primary);
+            color: white;
+        }
+
+        input[type="range"] {
+            background: var(--bg-tertiary);
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            background: var(--accent-primary);
+        }
+
+        select, input {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            border-color: var(--border-color);
+        }
+
+        select:focus, input:focus {
+            border-color: var(--accent-primary);
+            outline: none;
+            box-shadow: 0 0 0 3px var(--accent-light);
+        }
+
+        .notification {
+            background-color: var(--success);
+            color: white;
+            box-shadow: var(--shadow-xl);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Smooth transitions for theme changes */
+        * {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav style="background-color: var(--bg-elevated); border-bottom: 1px solid var(--border-color);" class="sticky top-0 z-50 backdrop-blur-sm">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-4">
+                    <h1 class="text-2xl font-bold" style="color: var(--accent-primary);">🎮 Clash Emote Detector+</h1>
+                </div>
+                <div class="flex space-x-1">
+                    <a href="/" class="nav-link px-4 py-2 rounded-lg transition">📷 Camera</a>
+                    <a href="/emotes" class="nav-link px-4 py-2 rounded-lg transition">🎨 Manage Emotes</a>
+                    <a href="/capture" class="nav-link px-4 py-2 rounded-lg transition">📸 Collect Data</a>
+                    <a href="/settings" class="nav-link active px-4 py-2 rounded-lg shadow-lg">⚙️ Settings</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-5xl mx-auto">
+            <!-- Header -->
+            <div class="mb-8">
+                <h2 class="text-4xl font-bold mb-2" style="color: var(--accent-primary);">⚙️ Settings</h2>
+                <p style="color: var(--text-secondary);">Configure your emote detection experience</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Detection Settings -->
+                <div class="card rounded-2xl p-6 shadow-lg">
+                    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2">
+                        <span class="text-3xl">🎯</span>
+                        Detection Settings
+                    </h3>
+                    
+                    <div class="space-y-6">
+                        <!-- Confidence Threshold -->
+                        <div>
+                            <label class="block text-sm font-bold mb-2" style="color: var(--text-secondary);">Confidence Threshold</label>
+                            <div class="flex items-center gap-4">
+                                <input type="range" id="confidenceThreshold" min="0" max="100" value="45" 
+                                       class="flex-1 h-2 rounded-lg appearance-none cursor-pointer"
+                                       oninput="updateConfidenceDisplay(this.value)">
+                                <span id="confidenceValue" class="text-2xl font-bold w-16 text-right" style="color: var(--accent-primary);">45%</span>
+                            </div>
+                            <p class="text-xs mt-2" style="color: var(--text-tertiary);">Minimum confidence required for emote detection</p>
+                        </div>
+
+                        <!-- Detection Smoothing -->
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <label class="block text-sm font-bold" style="color: var(--text-secondary);">Detection Smoothing</label>
+                                    <p class="text-xs mt-1" style="color: var(--text-tertiary);">Stabilize predictions to reduce flickering</p>
+                                </div>
+                                <div class="relative inline-block w-12 mr-2 align-middle select-none">
+                                    <input type="checkbox" id="detectionSmoothing" 
+                                           class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all"
+                                           onchange="saveSettings()" checked>
+                                    <label for="detectionSmoothing" class="toggle-label block overflow-hidden h-6 rounded-full cursor-pointer"></label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Show FPS -->
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <label class="block text-sm font-bold" style="color: var(--text-secondary);">Show FPS Counter</label>
+                                    <p class="text-xs mt-1" style="color: var(--text-tertiary);">Display frames per second on camera feed</p>
+                                </div>
+                                <div class="relative inline-block w-12 mr-2 align-middle select-none">
+                                    <input type="checkbox" id="showFPS" 
+                                           class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all"
+                                           onchange="saveSettings()" checked>
+                                    <label for="showFPS" class="toggle-label block overflow-hidden h-6 rounded-full cursor-pointer"></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Audio & Alert Settings -->
+                <div class="card rounded-2xl p-6 shadow-lg">
+                    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2">
+                        <span class="text-3xl">🔊</span>
+                        Audio & Alerts
+                    </h3>
+                    
+                    <div class="space-y-6">
+                        <!-- Play Sound Toggle -->
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <label class="block text-sm font-bold" style="color: var(--text-secondary);">Play Sound on Detection</label>
+                                    <p class="text-xs mt-1" style="color: var(--text-tertiary);">Play audio when emote is detected</p>
+                                </div>
+                                <div class="relative inline-block w-12 mr-2 align-middle select-none">
+                                    <input type="checkbox" id="playSound" 
+                                           class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all"
+                                           onchange="saveSettings()" checked>
+                                    <label for="playSound" class="toggle-label block overflow-hidden h-6 rounded-full cursor-pointer"></label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Volume Control -->
+                        <div>
+                            <label class="block text-sm font-bold mb-2" style="color: var(--text-secondary);">Audio Volume</label>
+                            <div class="flex items-center gap-4">
+                                <span class="text-lg">🔈</span>
+                                <input type="range" id="audioVolume" min="0" max="100" value="80" 
+                                       class="flex-1 h-2 rounded-lg appearance-none cursor-pointer"
+                                       oninput="updateVolumeDisplay(this.value)">
+                                <span id="volumeValue" class="text-lg font-bold w-16 text-right" style="color: var(--accent-primary);">80%</span>
+                            </div>
+                        </div>
+
+                        <!-- Toast Notifications -->
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <label class="block text-sm font-bold" style="color: var(--text-secondary);">Show Toast Notifications</label>
+                                    <p class="text-xs mt-1" style="color: var(--text-tertiary);">Display popup alerts for detections</p>
+                                </div>
+                                <div class="relative inline-block w-12 mr-2 align-middle select-none">
+                                    <input type="checkbox" id="showToast" 
+                                           class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all"
+                                           onchange="saveSettings()" checked>
+                                    <label for="showToast" class="toggle-label block overflow-hidden h-6 rounded-full cursor-pointer"></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data & Model Settings -->
+                <div class="card rounded-2xl p-6 shadow-lg">
+                    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2">
+                        <span class="text-3xl">🗄️</span>
+                        Data & Model
+                    </h3>
+                    
+                    <div class="space-y-6">
+                        <!-- Active Model -->
+                        <div>
+                            <label class="block text-sm font-bold mb-2" style="color: var(--text-secondary);">Active Model</label>
+                            <select id="activeModel" 
+                                    class="w-full px-4 py-3 border rounded-lg focus:outline-none transition cursor-pointer"
+                                    onchange="handleModelChange()">
+                                <option value="pose_model_4_ultimate.pth">🚀 Model 4 Ultimate (Best)</option>
+                                <option value="pose_embedding_classifier.pth">🧬 Embedding Classifier</option>
+                                <option value="model_3_best.pth">⚡ Model 3</option>
+                                <option value="pose_neural_classifier.pth">🧠 Neural Net</option>
+                                <option value="pose_classifier_model_randomforest.pkl">🌲 RandomForest</option>
+                            </select>
+                        </div>
+
+                        <!-- Reload Model Button -->
+                        <div>
+                            <button onclick="reloadModel()" 
+                                    class="btn-primary w-full px-6 py-3 rounded-lg font-bold shadow-lg">
+                                🔄 Reload Model
+                            </button>
+                        </div>
+
+                        <!-- Auto Save Logs -->
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <label class="block text-sm font-bold" style="color: var(--text-secondary);">Auto Save Detection Logs</label>
+                                    <p class="text-xs mt-1" style="color: var(--text-tertiary);">Save detection history to file</p>
+                                </div>
+                                <div class="relative inline-block w-12 mr-2 align-middle select-none">
+                                    <input type="checkbox" id="autoSaveLogs" 
+                                           class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all"
+                                           onchange="saveSettings()">
+                                    <label for="autoSaveLogs" class="toggle-label block overflow-hidden h-6 rounded-full cursor-pointer"></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Theme Settings -->
+                <div class="card rounded-2xl p-6 shadow-lg">
+                    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2">
+                        <span class="text-3xl">🎨</span>
+                        Appearance
+                    </h3>
+                    
+                    <div class="space-y-6">
+                        <!-- Theme Selector -->
+                        <div>
+                            <label class="block text-sm font-bold mb-3" style="color: var(--text-secondary);">App Theme</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button onclick="setTheme('light')" id="theme-light"
+                                        class="theme-btn px-4 py-3 rounded-lg font-semibold">
+                                    ☀️ Light
+                                </button>
+                                <button onclick="setTheme('dark')" id="theme-dark"
+                                        class="theme-btn active px-4 py-3 rounded-lg font-semibold">
+                                    🌙 Dark
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- UI Scale -->
+                        <div>
+                            <label class="block text-sm font-bold mb-2" style="color: var(--text-secondary);">UI Scale</label>
+                            <div class="flex items-center gap-4">
+                                <input type="range" id="uiScale" min="80" max="120" value="100" step="10"
+                                       class="flex-1 h-2 rounded-lg appearance-none cursor-pointer"
+                                       oninput="updateUIScale(this.value)">
+                                <span id="uiScaleValue" class="text-lg font-bold w-16 text-right" style="color: var(--accent-primary);">100%</span>
+                            </div>
+                        </div>
+
+                        <!-- Animations -->
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <label class="block text-sm font-bold" style="color: var(--text-secondary);">Enable Animations</label>
+                                    <p class="text-xs mt-1" style="color: var(--text-tertiary);">Smooth transitions and effects</p>
+                                </div>
+                                <div class="relative inline-block w-12 mr-2 align-middle select-none">
+                                    <input type="checkbox" id="enableAnimations" 
+                                           class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all"
+                                           onchange="saveSettings()" checked>
+                                    <label for="enableAnimations" class="toggle-label block overflow-hidden h-6 rounded-full cursor-pointer"></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Camera Settings -->
+                <div class="card rounded-2xl p-6 shadow-lg lg:col-span-2">
+                    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2">
+                        <span class="text-3xl">📷</span>
+                        Camera Settings
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Camera Selection -->
+                        <div>
+                            <label class="block text-sm font-bold mb-2" style="color: var(--text-secondary);">Camera Device</label>
+                            <select id="cameraDevice" 
+                                    class="w-full px-4 py-3 border rounded-lg focus:outline-none transition cursor-pointer"
+                                    onchange="handleCameraChange()">
+                                <option value="0">Camera 0 (Default)</option>
+                                <option value="1">Camera 1 (External)</option>
+                            </select>
+                        </div>
+
+                        <!-- Camera Resolution -->
+                        <div>
+                            <label class="block text-sm font-bold mb-2" style="color: var(--text-secondary);">Resolution</label>
+                            <select id="cameraResolution" 
+                                    class="w-full px-4 py-3 border rounded-lg focus:outline-none transition cursor-pointer"
+                                    onchange="saveSettings()">
+                                <option value="640x480">640x480 (Standard)</option>
+                                <option value="1280x720" selected>1280x720 (HD)</option>
+                                <option value="1920x1080">1920x1080 (Full HD)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Save Notification -->
+            <div id="saveNotification" class="notification hidden fixed bottom-8 right-8 px-6 py-4 rounded-xl z-50">
+                ✅ Settings saved successfully!
+            </div>
+
+            <!-- Reset Settings -->
+            <div class="mt-8 text-center">
+                <button onclick="resetSettings()" 
+                        class="px-8 py-3 rounded-lg font-bold shadow-lg transition hover:scale-105"
+                        style="background-color: var(--error); color: white;">
+                    🔄 Reset to Defaults
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== SETTINGS MANAGEMENT ====================
+        
+        function loadSettings() {
+            const settings = {
+                confidenceThreshold: localStorage.getItem('confidenceThreshold') || 45,
+                detectionSmoothing: localStorage.getItem('detectionSmoothing') !== 'false',
+                showFPS: localStorage.getItem('showFPS') !== 'false',
+                playSound: localStorage.getItem('playSound') !== 'false',
+                audioVolume: localStorage.getItem('audioVolume') || 80,
+                showToast: localStorage.getItem('showToast') !== 'false',
+                activeModel: localStorage.getItem('activeModel') || 'pose_model_4_ultimate.pth',
+                autoSaveLogs: localStorage.getItem('autoSaveLogs') === 'true',
+                theme: localStorage.getItem('theme') || 'dark',
+                uiScale: localStorage.getItem('uiScale') || 100,
+                enableAnimations: localStorage.getItem('enableAnimations') !== 'false',
+                cameraDevice: localStorage.getItem('cameraDevice') || '0',
+                cameraResolution: localStorage.getItem('cameraResolution') || '1280x720'
+            };
+
+            // Apply settings to UI
+            document.getElementById('confidenceThreshold').value = settings.confidenceThreshold;
+            updateConfidenceDisplay(settings.confidenceThreshold);
+            document.getElementById('detectionSmoothing').checked = settings.detectionSmoothing;
+            document.getElementById('showFPS').checked = settings.showFPS;
+            document.getElementById('playSound').checked = settings.playSound;
+            document.getElementById('audioVolume').value = settings.audioVolume;
+            updateVolumeDisplay(settings.audioVolume);
+            document.getElementById('showToast').checked = settings.showToast;
+            document.getElementById('activeModel').value = settings.activeModel;
+            document.getElementById('autoSaveLogs').checked = settings.autoSaveLogs;
+            document.getElementById('uiScale').value = settings.uiScale;
+            updateUIScale(settings.uiScale);
+            document.getElementById('enableAnimations').checked = settings.enableAnimations;
+            document.getElementById('cameraDevice').value = settings.cameraDevice;
+            document.getElementById('cameraResolution').value = settings.cameraResolution;
+            setTheme(settings.theme);
+
+            console.log('✅ Settings loaded:', settings);
+        }
+
+        function saveSettings() {
+            const settings = {
+                confidenceThreshold: document.getElementById('confidenceThreshold').value,
+                detectionSmoothing: document.getElementById('detectionSmoothing').checked,
+                showFPS: document.getElementById('showFPS').checked,
+                playSound: document.getElementById('playSound').checked,
+                audioVolume: document.getElementById('audioVolume').value,
+                showToast: document.getElementById('showToast').checked,
+                activeModel: document.getElementById('activeModel').value,
+                autoSaveLogs: document.getElementById('autoSaveLogs').checked,
+                uiScale: document.getElementById('uiScale').value,
+                enableAnimations: document.getElementById('enableAnimations').checked,
+                cameraDevice: document.getElementById('cameraDevice').value,
+                cameraResolution: document.getElementById('cameraResolution').value,
+                theme: localStorage.getItem('theme') || 'dark'
+            };
+
+            // Save to localStorage
+            Object.keys(settings).forEach(key => {
+                localStorage.setItem(key, settings[key]);
+            });
+
+            // Show save notification
+            showSaveNotification();
+            console.log('💾 Settings saved:', settings);
+        }
+
+        // ==================== UI UPDATES ====================
+        
+        function updateConfidenceDisplay(value) {
+            document.getElementById('confidenceValue').textContent = value + '%';
+            saveSettings();
+        }
+
+        function updateVolumeDisplay(value) {
+            document.getElementById('volumeValue').textContent = value + '%';
+            saveSettings();
+        }
+
+        function updateUIScale(value) {
+            document.getElementById('uiScaleValue').textContent = value + '%';
+            document.documentElement.style.fontSize = (16 * value / 100) + 'px';
+            saveSettings();
+        }
+
+        // ==================== THEME SYSTEM ====================
+        
+        function setTheme(theme) {
+            // Update theme buttons
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            const btn = document.getElementById('theme-' + theme);
+            if (btn) {
+                btn.classList.add('active');
+            }
+
+            // Apply theme to HTML element
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            
+            console.log('🎨 Theme set to:', theme);
+            showSaveNotification(`Theme changed to ${theme} mode`);
+        }
+
+        // ==================== MODEL & CAMERA MANAGEMENT ====================
+        
+        function handleModelChange() {
+            const modelName = document.getElementById('activeModel').value;
+            saveSettings();
+            showSaveNotification(`Model selected: ${modelName}`);
+        }
+
+        function reloadModel() {
+            const modelName = document.getElementById('activeModel').value;
+            showSaveNotification('🔄 Reloading model...');
+            
+            fetch(`/api/set_model/${modelName}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showSaveNotification('✅ Model reloaded successfully!');
+                        saveSettings();
+                    } else {
+                        showSaveNotification('❌ Failed to reload model');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error reloading model:', err);
+                    showSaveNotification('❌ Error reloading model');
+                });
+        }
+
+        function handleCameraChange() {
+            const cameraIndex = document.getElementById('cameraDevice').value;
+            showSaveNotification('📷 Switching camera...');
+            
+            fetch('/api/switch_camera', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ camera_index: parseInt(cameraIndex) })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showSaveNotification(`✅ Switched to Camera ${cameraIndex}`);
+                        saveSettings();
+                    } else {
+                        showSaveNotification('❌ Failed to switch camera');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error switching camera:', err);
+                    showSaveNotification('❌ Error switching camera');
+                });
+        }
+
+        // ==================== NOTIFICATIONS ====================
+        
+        function showSaveNotification(message = '✅ Settings saved successfully!') {
+            const notification = document.getElementById('saveNotification');
+            notification.textContent = message;
+            notification.classList.remove('hidden');
+            
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 3000);
+        }
+
+        // ==================== RESET ====================
+        
+        function resetSettings() {
+            if (!confirm('Reset all settings to default values?')) {
+                return;
+            }
+
+            localStorage.clear();
+            loadSettings();
+            showSaveNotification('🔄 Settings reset to defaults');
+            console.log('🔄 Settings reset');
+        }
+
+        // ==================== INITIALIZATION ====================
+        
+        // Load settings on page load
+        loadSettings();
+
+        // Auto-save on slider changes
+        document.getElementById('confidenceThreshold').addEventListener('input', () => saveSettings());
+        document.getElementById('audioVolume').addEventListener('input', () => saveSettings());
+
+        console.log('✅ Settings page loaded with advanced theme system');
+    </script>
+</body>
+</html>

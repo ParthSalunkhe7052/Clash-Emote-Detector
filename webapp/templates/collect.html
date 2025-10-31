@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Data Collection - Clash Emote Detector</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .collection-container {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        .video-section {
+            flex: 2;
+            position: relative;
+        }
+        
+        .video-wrapper {
+            position: relative;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        
+        #videoFeed {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+        }
+        
+        .quality-indicators {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 15px;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            z-index: 10;
+        }
+        
+        .camera-controls-overlay {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+        
+        .camera-toggle-btn {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.5), 0 0 40px rgba(76,175,80,0.3);
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+        
+        .camera-toggle-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 8px 30px rgba(76,175,80,0.6), 0 0 60px rgba(76,175,80,0.5);
+        }
+        
+        .camera-toggle-btn.off {
+            background: linear-gradient(135deg, #f44336, #da190b);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.5), 0 0 40px rgba(244,67,54,0.3);
+        }
+        
+        .camera-toggle-btn.off:hover {
+            box-shadow: 0 8px 30px rgba(244,67,54,0.6), 0 0 60px rgba(244,67,54,0.5);
+        }
+        
+        .camera-status-text {
+            font-size: 13px;
+            color: #00ff00;
+            text-align: center;
+            margin-top: 8px;
+            font-weight: 600;
+            text-shadow: 0 0 10px rgba(0,255,0,0.5);
+        }
+        
+        .pose-active {
+            animation: pulse-green 1.5s infinite;
+        }
+        
+        @keyframes pulse-green {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        .indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        
+        .indicator-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #666;
+        }
+        
+        .indicator-dot.good {
+            background: #00ff00;
+            box-shadow: 0 0 10px #00ff00;
+        }
+        
+        .indicator-dot.bad {
+            background: #ff0000;
+            box-shadow: 0 0 10px #ff0000;
+        }
+        
+        .recording-indicator {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,0,0,0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: none;
+            animation: pulse 1s infinite;
+        }
+        
+        .recording-indicator.active {
+            display: block;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .control-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .emote-selector {
+            background: rgba(31, 41, 55, 0.9);
+            backdrop-filter: blur(12px);
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid rgba(75, 85, 99, 0.5);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        
+        .emote-selector h3 {
+            color: white;
+            margin-bottom: 15px;
+        }
+        
+        .emote-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .emote-card {
+            padding: 15px;
+            background: rgba(55, 65, 81, 0.5);
+            border: 2px solid rgba(75, 85, 99, 0.5);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .emote-card:hover {
+            border-color: #4CAF50;
+            background: rgba(55, 65, 81, 0.8);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+        
+        .emote-card.active {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.2);
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.4);
+        }
+        
+        .emote-card.complete {
+            border-color: #2196F3;
+            background: rgba(33, 150, 243, 0.2);
+            box-shadow: 0 0 20px rgba(33, 150, 243, 0.3);
+        }
+        
+        .emote-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: white;
+        }
+        
+        .emote-progress {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(55, 65, 81, 0.8);
+            border-radius: 4px;
+            margin-top: 5px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            transition: width 0.5s ease-out;
+        }
+        
+        .emote-thumbnail {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            margin: 0 auto 8px;
+            border-radius: 6px;
+        }
+        
+        .collection-controls {
+            background: rgba(31, 41, 55, 0.9);
+            backdrop-filter: blur(12px);
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid rgba(75, 85, 99, 0.5);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        
+        .collection-controls h3 {
+            color: white;
+            margin-bottom: 15px;
+        }
+        
+        .big-button {
+            width: 100%;
+            padding: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+        
+        .auto-capture-toggle {
+            background: linear-gradient(135deg, #666, #555);
+            color: white;
+        }
+        
+        .auto-capture-toggle.active {
+            background: linear-gradient(135deg, #2196F3, #0b7dda);
+        }
+        
+        .auto-capture-toggle:hover {
+            transform: scale(1.02);
+            box-shadow: 0 6px 20px rgba(33,150,243,0.4);
+        }
+        
+        .reset-button {
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+            color: white;
+            padding: 10px;
+            font-size: 14px;
+        }
+        
+        .reset-button:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(255,152,0,0.4);
+        }
+        
+        .start-button {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+        
+        .start-button:hover {
+            transform: scale(1.02);
+            box-shadow: 0 6px 20px rgba(76,175,80,0.4);
+        }
+        
+        .start-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .stop-button {
+            background: linear-gradient(135deg, #f44336, #da190b);
+            color: white;
+        }
+        
+        .export-button {
+            background: linear-gradient(135deg, #2196F3, #0b7dda);
+            color: white;
+        }
+        
+        .stats-panel {
+            background: rgba(31, 41, 55, 0.9);
+            backdrop-filter: blur(12px);
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid rgba(75, 85, 99, 0.5);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        
+        .stats-panel h3 {
+            color: white;
+            margin-bottom: 15px;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(75, 85, 99, 0.3);
+        }
+        
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+        
+        .stat-label {
+            color: #9ca3af;
+            font-size: 14px;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            color: #60a5fa;
+            font-size: 16px;
+        }
+        
+        .instructions {
+            background: rgba(59, 130, 246, 0.1);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-left: 4px solid #3b82f6;
+            margin-top: 15px;
+            backdrop-filter: blur(8px);
+        }
+        
+        .instructions h4 {
+            margin-top: 0;
+            color: #60a5fa;
+            font-size: 16px;
+        }
+        
+        .instructions ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin: 5px 0;
+            color: #d1d5db;
+        }
+        
+        .instructions p {
+            color: #d1d5db;
+            margin: 0;
+        }
+        
+        .sequence-preview {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+            overflow-x: auto;
+        }
+        
+        .sequence-frame {
+            width: 60px;
+            height: 60px;
+            border: 2px solid rgba(75, 85, 99, 0.5);
+            border-radius: 8px;
+            background: rgba(55, 65, 81, 0.5);
+            transition: all 0.3s;
+        }
+        
+        .sequence-frame.captured {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.2);
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    <!-- Navigation -->
+    <nav class="bg-gray-800/80 backdrop-blur-sm border-b border-gray-700 sticky top-0 z-50">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-4">
+                    <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">🎮 Clash Emote Detector+</h1>
+                </div>
+                <div class="flex space-x-1">
+                    <a href="/" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition">📷 Camera</a>
+                    <a href="/emotes" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition">🎨 Manage Emotes</a>
+                    <a href="/collect" class="px-4 py-2 bg-blue-600 text-white rounded-lg shadow-lg">📸 Collect Data</a>
+                    <a href="/settings" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition">⚙️ Settings</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="collection-container">
+        <!-- Video Section -->
+        <div class="video-section">
+            <div class="video-wrapper">
+                <img id="videoFeed" src="{{ url_for('video_feed') }}" alt="Video Feed">
+                <div class="video-overlay">
+                    <div class="recording-indicator" id="recordingIndicator">
+                        ⏺ RECORDING SEQUENCE
+                    </div>
+                    
+                    <!-- Camera Toggle Overlay -->
+                    <div class="camera-controls-overlay">
+                        <button class="camera-toggle-btn" id="cameraToggleBtn" onclick="toggleCamera()">
+                            🎥 Camera ON
+                        </button>
+                        <div class="camera-status-text" id="cameraStatusText">Camera active</div>
+                    </div>
+                    
+                    <div class="quality-indicators">
+                        <div class="indicator">
+                            <div class="indicator-dot" id="poseIndicator"></div>
+                            <span>Pose Detected</span>
+                        </div>
+                        <div class="indicator">
+                            <div class="indicator-dot" id="handsIndicator"></div>
+                            <span>Hands Visible</span>
+                        </div>
+                        <div class="indicator">
+                            <div class="indicator-dot" id="faceIndicator"></div>
+                            <span>Face Visible</span>
+                        </div>
+                        <div class="indicator">
+                            <div class="indicator-dot" id="lightingIndicator"></div>
+                            <span>Good Lighting</span>
+                        </div>
+                        <div class="indicator">
+                            <div class="indicator-dot" id="stabilityIndicator"></div>
+                            <span>Stable Position</span>
+                        </div>
+                        <div class="indicator" id="poseActiveIndicator" style="margin-top: 10px; border-top: 1px solid #444; padding-top: 10px;">
+                            <div class="indicator-dot pose-active" id="poseActiveLight" style="display: none;"></div>
+                            <span id="poseActiveText" style="color: #888;">No pose detected</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="instructions">
+                <h4>📋 Current Emote Instructions</h4>
+                <div id="emoteInstructions">
+                    <p>Select an emote to see instructions</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Section -->
+        <div class="control-section">
+            <!-- Emote Selector -->
+            <div class="emote-selector">
+                <h3>Select Emote</h3>
+                <div class="emote-grid" id="emoteGrid">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Collection Controls -->
+            <div class="collection-controls">
+                <h3>Collection Controls</h3>
+                
+                <!-- Auto Capture Toggle -->
+                <button class="big-button auto-capture-toggle" id="autoCaptureToggle" onclick="toggleAutoCapture()">
+                    🤖 Enable Auto Capture
+                </button>
+                
+                <button class="big-button start-button" id="startButton" onclick="startCollection()">
+                    📸 Capture Sample
+                </button>
+                <button class="big-button stop-button" id="stopButton" onclick="stopCollection()" style="display:none;">
+                    ⏹ STOP
+                </button>
+                <button class="big-button export-button" onclick="exportData()">
+                    💾 EXPORT DATA
+                </button>
+                <button class="big-button reset-button" onclick="resetSession()">
+                    🔄 Reset Session
+                </button>
+                
+                <div class="sequence-preview" id="sequencePreview">
+                    <!-- Shows captured frames in sequence -->
+                </div>
+            </div>
+
+            <!-- Stats Panel -->
+            <div class="stats-panel">
+                <h3>Collection Statistics</h3>
+                <div class="stat-item">
+                    <span class="stat-label">Total Samples:</span>
+                    <span class="stat-value" id="totalSamples">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Current Emote:</span>
+                    <span class="stat-value" id="currentEmoteSamples">0 / 200</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Quality Score:</span>
+                    <span class="stat-value" id="qualityScore">--</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Completion:</span>
+                    <span class="stat-value" id="overallCompletion">0%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script>
+        const socket = io();
+        let currentEmote = 0;
+        let isCollecting = false;
+        let samplesPerEmote = 200;
+        let cameraOn = true;
+        let autoCaptureEnabled = false;
+        let lastPoseQuality = 0;
+        
+        const emotes = [
+            { id: 0, name: "Laughing", image: "laughing.png", instructions: ["Hands up near shoulders", "Big smile", "Hold for 2 seconds"] },
+            { id: 1, name: "Yawning", image: "yawning.png", instructions: ["One hand beside mouth (spread wide)", "Mouth WIDE open", "Hold steady"] },
+            { id: 2, name: "Crying", image: "crying.png", instructions: ["Both hands on face", "Cover eyes/face", "Sad expression"] },
+            { id: 3, name: "Taunting", image: "taunting.png", instructions: ["Confident smirk", "Hand on hip or arms crossed", "Cocky stance"] },
+            { id: 4, name: "E Wiz", image: "EWiz.png", legacyName: "Arms Folded Laughing", instructions: ["Arms tightly folded", "Laughing expression", "Keep arms crossed"] },
+            { id: 5, name: "Kissing", image: "kissing.png", legacyName: "Hands Chest Kissing", instructions: ["Hands together at chest", "Kissing gesture", "Prayer-like hands"] },
+            { id: 6, name: "Screaming", image: "screaming.png", legacyName: "Hands Raised Screaming", instructions: ["Hands at ear level", "Mouth WIDE open", "Screaming expression"] }
+        ];
+        
+        let emoteProgress = {};
+        emotes.forEach(e => emoteProgress[e.id] = 0);
+        
+        // Initialize
+        function init() {
+            renderEmoteGrid();
+            selectEmote(0);
+            updateStats();
+            
+            // Socket listeners
+            socket.on('collection_update', (data) => {
+                if (data.emote_id !== undefined) {
+                    emoteProgress[data.emote_id] = data.count;
+                    updateStats();
+                    renderEmoteGrid();
+                }
+            });
+            
+            socket.on('quality_feedback', (data) => {
+                updateQualityIndicators(data);
+            });
+            
+            socket.on('sequence_progress', (data) => {
+                updateSequencePreview(data.frames_captured, data.total_frames);
+            });
+            
+            // Load existing progress
+            fetch('/api/collection_progress')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.progress) {
+                        emoteProgress = data.progress;
+                        updateStats();
+                        renderEmoteGrid();
+                    }
+                });
+        }
+        
+        function renderEmoteGrid() {
+            const grid = document.getElementById('emoteGrid');
+            grid.innerHTML = '';
+            
+            emotes.forEach(emote => {
+                const card = document.createElement('div');
+                card.className = 'emote-card';
+                if (emote.id === currentEmote) card.classList.add('active');
+                if (emoteProgress[emote.id] >= samplesPerEmote) card.classList.add('complete');
+                
+                const progress = emoteProgress[emote.id] || 0;
+                const percentage = Math.min(100, (progress / samplesPerEmote) * 100);
+                
+                // Create image element with fallback
+                const imgPath = `/images/${emote.image}`;
+                const fallbackSvg = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Crect fill='%23ddd' width='60' height='60'/%3E%3Ctext fill='%23333' font-size='24' x='50%25' y='50%25' text-anchor='middle' dy='0.3em'%3E${emote.name[0]}%3C/text%3E%3C/svg%3E`;
+                
+                card.innerHTML = `
+                    <img src="${imgPath}" 
+                         class="emote-thumbnail" 
+                         alt="${emote.name}"
+                         onerror="this.src='${fallbackSvg}'">
+                    <div class="emote-name">${emote.name}</div>
+                    <div class="emote-progress">${progress} / ${samplesPerEmote}</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${percentage}%"></div>
+                    </div>
+                `;
+                
+                card.onclick = () => selectEmote(emote.id);
+                grid.appendChild(card);
+            });
+        }
+        
+        function selectEmote(emoteId) {
+            currentEmote = emoteId;
+            const emote = emotes.find(e => e.id === emoteId);
+            
+            const instructionsDiv = document.getElementById('emoteInstructions');
+            instructionsDiv.innerHTML = `
+                <p><strong>${emote.name}</strong></p>
+                <ul>
+                    ${emote.instructions.map(i => `<li>${i}</li>`).join('')}
+                </ul>
+            `;
+            
+            renderEmoteGrid();
+            updateStats();
+            
+            // Notify server
+            fetch('/api/select_emote', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({emote_id: emoteId})
+            });
+        }
+        
+        function startCollection() {
+            isCollecting = true;
+            document.getElementById('startButton').style.display = 'none';
+            document.getElementById('stopButton').style.display = 'block';
+            document.getElementById('recordingIndicator').classList.add('active');
+            
+            fetch('/api/start_collection', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({emote_id: currentEmote})
+            });
+        }
+        
+        function stopCollection() {
+            isCollecting = false;
+            document.getElementById('startButton').style.display = 'block';
+            document.getElementById('stopButton').style.display = 'none';
+            document.getElementById('recordingIndicator').classList.remove('active');
+            
+            fetch('/api/stop_collection', {method: 'POST'});
+        }
+        
+        function exportData() {
+            fetch('/api/export_collection', {method: 'POST'})
+                .then(r => r.json())
+                .then(data => {
+                    alert(`Exported ${data.total_samples} samples!\nSaved to: ${data.export_path}`);
+                });
+        }
+        
+        function updateQualityIndicators(data) {
+            document.getElementById('poseIndicator').className = 'indicator-dot ' + (data.pose ? 'good' : 'bad');
+            document.getElementById('handsIndicator').className = 'indicator-dot ' + (data.hands ? 'good' : 'bad');
+            document.getElementById('faceIndicator').className = 'indicator-dot ' + (data.face ? 'good' : 'bad');
+            document.getElementById('lightingIndicator').className = 'indicator-dot ' + (data.lighting ? 'good' : 'bad');
+            document.getElementById('stabilityIndicator').className = 'indicator-dot ' + (data.stability ? 'good' : 'bad');
+            
+            const qualityScore = Math.round(data.overall_quality * 100);
+            document.getElementById('qualityScore').textContent = qualityScore + '%';
+            lastPoseQuality = data.overall_quality;
+            
+            // Update pose active indicator
+            const poseActiveLight = document.getElementById('poseActiveLight');
+            const poseActiveText = document.getElementById('poseActiveText');
+            if (data.pose && data.overall_quality > 0.5) {
+                poseActiveLight.style.display = 'block';
+                poseActiveLight.className = 'indicator-dot good pose-active';
+                poseActiveText.textContent = 'Pose Detected';
+                poseActiveText.style.color = '#00ff00';
+            } else {
+                poseActiveLight.style.display = 'none';
+                poseActiveText.textContent = 'No pose detected';
+                poseActiveText.style.color = '#888';
+            }
+        }
+        
+        function updateSequencePreview(captured, total) {
+            const preview = document.getElementById('sequencePreview');
+            preview.innerHTML = '';
+            
+            for (let i = 0; i < total; i++) {
+                const frame = document.createElement('div');
+                frame.className = 'sequence-frame';
+                if (i < captured) frame.classList.add('captured');
+                preview.appendChild(frame);
+            }
+        }
+        
+        function updateStats() {
+            const total = Object.values(emoteProgress).reduce((a, b) => a + b, 0);
+            const currentCount = emoteProgress[currentEmote] || 0;
+            const completion = Math.round((total / (samplesPerEmote * 7)) * 100);
+            
+            document.getElementById('totalSamples').textContent = total;
+            document.getElementById('currentEmoteSamples').textContent = `${currentCount} / ${samplesPerEmote}`;
+            document.getElementById('overallCompletion').textContent = completion + '%';
+        }
+        
+        // Camera toggle function
+        function toggleCamera() {
+            cameraOn = !cameraOn;
+            const btn = document.getElementById('cameraToggleBtn');
+            const statusText = document.getElementById('cameraStatusText');
+            const videoFeed = document.getElementById('videoFeed');
+            
+            if (cameraOn) {
+                btn.textContent = '🎥 Camera ON';
+                btn.classList.remove('off');
+                statusText.textContent = 'Camera active';
+                statusText.style.color = '#00ff00';
+                // Reload video feed
+                videoFeed.src = "{{ url_for('video_feed') }}?t=" + new Date().getTime();
+            } else {
+                btn.textContent = '📷 Camera OFF';
+                btn.classList.add('off');
+                statusText.textContent = 'Camera paused';
+                statusText.style.color = '#ff4444';
+                // Stop video feed by setting empty src
+                videoFeed.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="640" height="480"%3E%3Crect fill="%23222" width="640" height="480"/%3E%3Ctext fill="%23fff" font-size="24" x="50%25" y="50%25" text-anchor="middle"%3ECamera Paused%3C/text%3E%3C/svg%3E';
+            }
+            
+            // Notify server
+            socket.emit('toggle_camera', { active: cameraOn });
+            console.log(`📷 Camera ${cameraOn ? 'ON' : 'OFF'}`);
+        }
+        
+        // Auto capture toggle
+        function toggleAutoCapture() {
+            autoCaptureEnabled = !autoCaptureEnabled;
+            const btn = document.getElementById('autoCaptureToggle');
+            
+            if (autoCaptureEnabled) {
+                btn.classList.add('active');
+                btn.textContent = '🤖 Disable Auto Capture';
+                console.log('✅ Auto capture enabled');
+            } else {
+                btn.classList.remove('active');
+                btn.textContent = '🤖 Enable Auto Capture';
+                console.log('❌ Auto capture disabled');
+            }
+        }
+        
+        // Reset session (clear local samples only)
+        function resetSession() {
+            if (!confirm('Reset all collected samples for this session? This will not delete saved data.')) {
+                return;
+            }
+            
+            // Reset progress
+            emotes.forEach(e => emoteProgress[e.id] = 0);
+            updateStats();
+            renderEmoteGrid();
+            
+            // Clear sequence preview
+            document.getElementById('sequencePreview').innerHTML = '';
+            
+            console.log('🔄 Session reset');
+            alert('Session reset! All local progress cleared.');
+        }
+        
+        // Handle page unload - stop camera
+        window.addEventListener('beforeunload', () => {
+            if (cameraOn) {
+                socket.emit('toggle_camera', { active: false });
+            }
+        });
+        
+        // Handle page visibility changes - DISABLED for Data Collection
+        // (This was causing camera to constantly pause/resume and fail)
+        // document.addEventListener('visibilitychange', () => {
+        //     if (document.hidden && cameraOn) {
+        //         console.log('📴 Page hidden, pausing camera');
+        //     } else if (!document.hidden && cameraOn) {
+        //         console.log('📹 Page visible, resuming camera');
+        //         const videoFeed = document.getElementById('videoFeed');
+        //         videoFeed.src = "{{ url_for('video_feed') }}?t=" + new Date().getTime();
+        //     }
+        // });
+        
+        // Force release camera on page load (in case it's stuck from another page)
+        function forceReleaseCamera() {
+            console.log('🔧 Force releasing camera from previous page...');
+            
+            // First, ensure camera is ON via socket
+            socket.emit('toggle_camera', { active: true });
+            console.log('📡 Sent camera ON signal via socket');
+            
+            fetch('/api/camera/force_release', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('✅ Camera released and reinitialized');
+                    
+                    // Ensure camera state is ON
+                    cameraOn = true;
+                    const btn = document.getElementById('cameraToggleBtn');
+                    if (btn) {
+                        btn.textContent = '🎥 Camera ON';
+                        btn.classList.remove('off');
+                    }
+                    const statusText = document.getElementById('cameraStatusText');
+                    if (statusText) {
+                        statusText.textContent = 'Camera active';
+                        statusText.style.color = '#00ff00';
+                    }
+                    
+                    // Reload video feed after longer delay to ensure camera is ready
+                    setTimeout(() => {
+                        const videoFeed = document.getElementById('videoFeed');
+                        videoFeed.src = "{{ url_for('video_feed') }}?t=" + new Date().getTime();
+                        console.log('📹 Video feed reloaded');
+                    }, 1500);  // Increased from 500ms to 1500ms
+                } else {
+                    console.warn('⚠️ Camera release failed:', data.message);
+                    // Try to load video feed anyway
+                    setTimeout(() => {
+                        const videoFeed = document.getElementById('videoFeed');
+                        videoFeed.src = "{{ url_for('video_feed') }}?t=" + new Date().getTime();
+                    }, 1000);
+                }
+            })
+            .catch(err => {
+                console.error('❌ Error releasing camera:', err);
+                // Try to load video feed anyway after error
+                setTimeout(() => {
+                    const videoFeed = document.getElementById('videoFeed');
+                    videoFeed.src = "{{ url_for('video_feed') }}?t=" + new Date().getTime();
+                }, 1000);
+            });
+        }
+        
+        // Initialize on load
+        setTimeout(() => {
+            // Initialize UI first
+            init();
+            // Then force release camera after a brief delay
+            setTimeout(() => {
+                forceReleaseCamera();
+            }, 500);
+        }, 100);
+        
+        // Show initialization message
+        console.log('✅ Data Collection page loaded');
+        console.log('📷 Camera controls ready');
+    </script>
+</body>
+</html>

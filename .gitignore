@@ -56,6 +56,7 @@ venv.bak/
 *.swp
 *.swo
 *~
+.windsurf/
 
 # OS
 .DS_Store
@@ -65,23 +66,33 @@ venv.bak/
 .Trashes
 ehthumbs.db
 Thumbs.db
+desktop.ini
 
-# Project specific
-# Keep the trained model for users
-# pose_classifier_model.pkl
+# Logs
+*.log
+*.tmp
+*.temp
 
-# Keep sample data for users
-# pose_data/
+# Training data (large files) - EXCLUDE ALL
+pose_data/
+pose_data_v2/
+pose_data/*.npz
+pose_data/*.npy
+pose_data/*.json
+pose_data_v2/*.npz
+pose_data_v2/*.npy
+pose_data_v2/*.json
+*.npz
+training_data/*/frame_*.jpg
+trained_multimodal/*.pth
 
-# Keep reference images and sounds
-# images/
-# sounds/
+# Model files (optional - include if you want to share trained models)
+# Uncomment these lines to ignore model files:
+# *.pth
+# *.pkl
+# model_*.json
 
-# Screenshots and temporary files
-!images/*.png
-holistic_detection_screenshot.png
-
-# Data collection backups (keep latest, ignore timestamped ones)
+# Data collection backups
 pose_data/pose_features_*.npy
 pose_data/pose_labels_*.npy
 pose_data/pose_metadata_*.json
@@ -91,3 +102,33 @@ pose_data/pose_metadata_*.json
 
 # Archive files
 *.zip
+*.tar.gz
+*.rar
+
+# Custom emotes uploaded by users
+custom_emotes/screenshots/
+custom_emotes/sounds/
+
+# Release assets (large model files for GitHub releases)
+release_assets/*.pth
+release_assets/*.pkl
+
+# Documentation screenshots - INCLUDE these in the repo!
+# docs/screenshots/*.png  (commented out - we want to include screenshots)
+# docs/screenshots/*.jpg
+# docs/screenshots/*.gif
+
+# Demo video - INCLUDE this too!
+# docs/demo-video.mp4  (commented out - we want to include the demo)
+
+# Temporary files
+holistic_detection_screenshot.png
+screenshot_*.png
+
+# Node modules (if any frontend tools added)
+node_modules/
+
+# Build outputs
+*.exe
+*.app
+*.dmg

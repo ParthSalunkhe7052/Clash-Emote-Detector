@@ -1,0 +1,86 @@
+{
+  "version": "2.0.0",
+  "emotes": [
+    {
+      "id": "laughing",
+      "label": "Laughing",
+      "model_index": 0,
+      "trained": true,
+      "audio": ["laughing.mp3"],
+      "image": "laughing.png",
+      "description": "Hands on waist, mouth wide open"
+    },
+    {
+      "id": "yawning",
+      "label": "Yawning",
+      "model_index": 1,
+      "trained": true,
+      "audio": ["yawning.mp3"],
+      "image": "yawning.png",
+      "description": "Hands over mouth"
+    },
+    {
+      "id": "crying",
+      "label": "Crying",
+      "model_index": 2,
+      "trained": true,
+      "audio": ["crying.mp3"],
+      "image": "crying.png",
+      "description": "Hands covering face"
+    },
+    {
+      "id": "taunting",
+      "label": "Taunting",
+      "model_index": 3,
+      "trained": true,
+      "audio": ["taunting.mp3"],
+      "image": "taunting.png",
+      "description": "Balled fists close to face"
+    },
+    {
+      "id": "e_wiz",
+      "label": "E Wiz",
+      "model_index": 4,
+      "trained": true,
+      "audio": ["arms_folded.mp3"],
+      "image": "EWiz.png",
+      "description": "Arms folded laughing pose",
+      "legacy_label": "Arms Folded Laughing"
+    },
+    {
+      "id": "kissing",
+      "label": "Kissing",
+      "model_index": 5,
+      "trained": true,
+      "audio": ["Kissing.mp3", "kissing.mp3"],
+      "image": "kissing.png",
+      "description": "Hands on chest kissing",
+      "legacy_label": "Hands Chest Kissing"
+    },
+    {
+      "id": "screaming",
+      "label": "Screaming",
+      "model_index": 6,
+      "trained": true,
+      "audio": ["Screaming.mp3", "screaming.mp3"],
+      "image": "screaming.png",
+      "description": "Hands raised screaming",
+      "legacy_label": "Hands Raised Screaming"
+    }
+  ],
+  "audio_config": {
+    "confidence_threshold": 0.45,
+    "debounce_ms": 1500,
+    "preload_count": 6,
+    "default_missing_audio": "sounds/default_missing_audio.mp3",
+    "max_concurrent_players": 1,
+    "stop_previous_on_new": true,
+    "format_priority": ["mp3"],
+    "dynamic_volume": {
+      "enabled": true,
+      "min_threshold": 0.45,
+      "full_volume_threshold": 0.6,
+      "description": "Volume scales linearly between min (0.45) and full (0.6)"
+    }
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "model_name": "Ultimate Model 4",
+  "version": "4.0",
+  "architecture": "Deep Residual Network with Attention",
+  "input_dim": 128,
+  "num_classes": 7,
+  "feature_type": "MediaPipe 128-D Embeddings",
+  "total_samples": 1048,
+  "train_samples": 838,
+  "val_samples": 210,
+  "samples_per_emote": {
+    "0": 150,
+    "1": 150,
+    "2": 150,
+    "3": 150,
+    "4": 148,
+    "5": 150,
+    "6": 150
+  },
+  "best_val_accuracy": 98.57142857142857,
+  "epochs_trained": 43,
+  "batch_size": 32,
+  "learning_rate": 0.001,
+  "emote_names": {
+    "0": "crying",
+    "1": "laughing",
+    "2": "taunting",
+    "3": "yawning",
+    "4": "arms_folded_laughing",
+    "5": "hands_chest_kissing",
+    "6": "hands_raised_screaming"
+  },
+  "layers": [
+    "Input: 128-D embeddings",
+    "FC1: 128 -> 512 (BatchNorm, ReLU, Dropout 0.4)",
+    "FC2: 512 -> 512 (BatchNorm, ReLU, Dropout 0.4, Residual)",
+    "FC3: 512 -> 256 (BatchNorm, ReLU, Dropout 0.3)",
+    "FC4: 256 -> 256 (BatchNorm, ReLU, Dropout 0.3, Residual)",
+    "FC5: 256 -> 128 (BatchNorm, ReLU, Dropout 0.2)",
+    "Attention: 128 -> 128 (Softmax)",
+    "Output: 128 -> 7 classes"
+  ],
+  "features": [
+    "Residual connections",
+    "Attention mechanism",
+    "Batch normalization",
+    "Dropout regularization",
+    "Weighted sampling",
+    "Learning rate scheduling",
+    "Early stopping"
+  ]
+}

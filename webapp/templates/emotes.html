@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Emotes - Clash Emote Detector+</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 text-white min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-gray-800/80 backdrop-blur-sm border-b border-gray-700 sticky top-0 z-50">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-4">
+                    <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">🎮 Clash Emote Detector+</h1>
+                </div>
+                <div class="flex space-x-1">
+                    <a href="/" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition">📷 Camera</a>
+                    <a href="/emotes" class="px-4 py-2 bg-blue-600 text-white rounded-lg shadow-lg">🎨 Manage Emotes</a>
+                    <a href="/capture" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition">📸 Collect Data</a>
+                    <a href="/settings" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition">⚙️ Settings</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-6xl mx-auto">
+            <!-- Header -->
+            <div class="mb-8">
+                <h2 class="text-4xl font-bold mb-2 bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">🎨 Emote Manager</h2>
+                <p class="text-gray-400">Add new emotes and manage existing ones</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Upload New Emote -->
+                <div class="bg-gray-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-gray-700">
+                    <h3 class="text-2xl font-bold mb-4 text-purple-400">➕ Add New Emote</h3>
+                    
+                    <form id="uploadForm" enctype="multipart/form-data" class="space-y-4">
+                        <!-- Emote Name -->
+                        <div>
+                            <label class="block text-sm font-semibold mb-2 text-gray-300">Emote Name</label>
+                            <input type="text" id="emoteName" name="emote_name" 
+                                   class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:border-purple-500 focus:outline-none text-white"
+                                   placeholder="e.g., thumbs_up"
+                                   required>
+                            <p class="text-xs text-gray-400 mt-1">Use lowercase with underscores (e.g., thumbs_up, peace_sign)</p>
+                        </div>
+
+                        <!-- Image Upload -->
+                        <div>
+                            <label class="block text-sm font-semibold mb-2 text-gray-300">Emote Image</label>
+                            <div class="relative">
+                                <input type="file" id="emoteImage" name="emote_image" accept="image/*"
+                                       class="hidden" onchange="previewImage(event)">
+                                <label for="emoteImage" 
+                                       class="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-600 rounded-lg cursor-pointer hover:border-purple-500 transition">
+                                    <div id="imagePreview" class="hidden w-full h-full">
+                                        <img id="previewImg" class="w-full h-full object-contain rounded-lg">
+                                    </div>
+                                    <div id="uploadPlaceholder" class="flex flex-col items-center justify-center">
+                                        <svg class="w-12 h-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                        </svg>
+                                        <p class="text-gray-400 text-sm">Click to upload image</p>
+                                        <p class="text-gray-500 text-xs mt-1">PNG, JPG up to 10MB</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" 
+                                class="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-bold shadow-lg transition transform hover:scale-105">
+                            ✨ Add Emote
+                        </button>
+                    </form>
+
+                    <!-- Status Message -->
+                    <div id="statusMessage" class="mt-4 hidden">
+                        <div class="p-4 rounded-lg">
+                            <p id="statusText"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Existing Emotes -->
+                <div class="bg-gray-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-gray-700">
+                    <h3 class="text-2xl font-bold mb-4 text-blue-400">📋 All Emotes</h3>
+                    
+                    <div class="space-y-3 max-h-[600px] overflow-y-auto">
+                        <div id="emotesList">
+                            <!-- Emotes will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Preview image before upload
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewImg').src = e.target.result;
+                    document.getElementById('imagePreview').classList.remove('hidden');
+                    document.getElementById('uploadPlaceholder').classList.add('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Load existing emotes
+        async function loadEmotes() {
+            try {
+                const response = await fetch('/api/emotes/list');
+                const data = await response.json();
+                
+                const emotesList = document.getElementById('emotesList');
+                if (data.emotes && data.emotes.length > 0) {
+                    emotesList.innerHTML = data.emotes.map(emote => `
+                        <div class="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg hover:bg-gray-700 transition">
+                            <div class="flex items-center space-x-3">
+                                <img src="/images/${emote.filename}" alt="${emote.name}" class="w-12 h-12 object-contain rounded">
+                                <div>
+                                    <p class="font-semibold">${emote.display_name}</p>
+                                    <p class="text-xs ${emote.trained ? 'text-green-400' : 'text-yellow-400'}">
+                                        ${emote.trained ? '✅ Trained' : '⏳ Not Trained'}
+                                    </p>
+                                </div>
+                            </div>
+                            ${!emote.trained ? '<span class="text-xs bg-yellow-600 px-2 py-1 rounded">Unavailable</span>' : ''}
+                        </div>
+                    `).join('');
+                } else {
+                    emotesList.innerHTML = '<p class="text-gray-400 text-center py-8">No emotes yet</p>';
+                }
+            } catch (error) {
+                console.error('Error loading emotes:', error);
+            }
+        }
+
+        // Upload form submission
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            const emoteName = document.getElementById('emoteName').value;
+            const emoteImage = document.getElementById('emoteImage').files[0];
+            
+            if (!emoteImage) {
+                showStatus('Please select an image', 'error');
+                return;
+            }
+            
+            formData.append('emote_name', emoteName);
+            formData.append('emote_image', emoteImage);
+            
+            try {
+                const response = await fetch('/api/emotes/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showStatus(data.message, 'success');
+                    document.getElementById('uploadForm').reset();
+                    document.getElementById('imagePreview').classList.add('hidden');
+                    document.getElementById('uploadPlaceholder').classList.remove('hidden');
+                    loadEmotes();
+                } else {
+                    showStatus(data.error || 'Upload failed', 'error');
+                }
+            } catch (error) {
+                showStatus('Error uploading emote: ' + error.message, 'error');
+            }
+        });
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            const statusText = document.getElementById('statusText');
+            
+            statusDiv.classList.remove('hidden');
+            statusText.textContent = message;
+            
+            const colors = {
+                'success': 'bg-green-900/50 border border-green-600 text-green-400',
+                'error': 'bg-red-900/50 border border-red-600 text-red-400'
+            };
+            
+            statusDiv.firstElementChild.className = `p-4 rounded-lg ${colors[type]}`;
+            
+            setTimeout(() => {
+                statusDiv.classList.add('hidden');
+            }, 5000);
+        }
+
+        // Load emotes on page load
+        loadEmotes();
+    </script>
+</body>
+</html>

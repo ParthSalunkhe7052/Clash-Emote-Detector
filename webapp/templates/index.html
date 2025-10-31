@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clash Emote Detector+</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 text-white min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-gray-800/80 backdrop-blur-sm border-b border-gray-700 sticky top-0 z-50">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-4">
+                    <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">🎮 Clash Emote Detector+</h1>
+                </div>
+                <div class="flex space-x-1">
+                    <a href="/" class="px-4 py-2 bg-blue-600 text-white rounded-lg shadow-lg">📷 Camera</a>
+                    <a href="/emotes" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition">🎨 Manage Emotes</a>
+                    <a href="/capture" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition">📸 Collect Data</a>
+                    <a href="/settings" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition">⚙️ Settings</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Camera Feed (Left Side - 2/3) -->
+            <div class="lg:col-span-2">
+                <div class="bg-gray-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-gray-700">
+                    <!-- Camera Controls -->
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-2xl font-bold">📷 Live Camera</h2>
+                        <div class="flex gap-3">
+                            <!-- Model Selector -->
+                            <select id="modelSelector" class="px-4 py-2 bg-purple-700 hover:bg-purple-600 text-white rounded-lg font-semibold shadow-lg transition border border-purple-600 focus:border-purple-400 focus:outline-none cursor-pointer">
+                                <option value="">Loading models...</option>
+                            </select>
+                            
+                            <!-- Camera Selector -->
+                            <select id="cameraSelector" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-semibold shadow-lg transition border border-gray-600 focus:border-blue-500 focus:outline-none cursor-pointer">
+                                <option value="">Loading cameras...</option>
+                            </select>
+                            
+                            <!-- Camera Toggle -->
+                            <button id="toggleCamera" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold shadow-lg transition transform hover:scale-105">
+                                🎥 Camera ON
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Video Feed -->
+                    <div class="relative bg-black rounded-xl overflow-hidden shadow-inner" style="aspect-ratio: 16/9;">
+                        <img id="videoFeed" 
+                             src="{{ url_for('video_feed') }}" 
+                             class="w-full h-full object-contain" 
+                             alt="Camera feed"
+                             style="display: block; min-height: 100%;"
+                             onload="console.log('✅ Video feed loaded successfully')"
+                             onerror="console.error('❌ Video feed failed to load'); this.style.display='none'; document.getElementById('videoError').style.display='flex';">
+                        <div id="videoError" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #1a1a1a; color: white; align-items: center; justify-content: center; flex-direction: column; padding: 20px; text-align: center;">
+                            <div style="font-size: 48px; margin-bottom: 20px;">📷</div>
+                            <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">Camera Feed Not Available</div>
+                            <div style="font-size: 14px; color: #999;">Check console for errors or refresh the page</div>
+                            <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px; background: #3b82f6; border-radius: 8px; cursor: pointer; border: none; color: white; font-weight: bold;">🔄 Refresh Page</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Stats -->
+                    <div class="mt-6 grid grid-cols-4 gap-4">
+                        <div class="bg-gradient-to-br from-green-600/20 to-green-800/20 border border-green-600/50 rounded-xl p-4 text-center hover:scale-105 transition">
+                            <div class="text-gray-300 text-sm font-semibold mb-1">⚡ FPS</div>
+                            <div id="fps" class="text-3xl font-bold text-green-400">30</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-blue-600/20 to-blue-800/20 border border-blue-600/50 rounded-xl p-4 text-center hover:scale-105 transition">
+                            <div class="text-gray-300 text-sm font-semibold mb-1">🎭 Detected</div>
+                            <div id="emoteText" class="text-xl font-bold text-blue-400 truncate">-</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-yellow-600/20 to-yellow-800/20 border border-yellow-600/50 rounded-xl p-4 text-center hover:scale-105 transition">
+                            <div class="text-gray-300 text-sm font-semibold mb-1">📊 Confidence</div>
+                            <div id="confidence" class="text-3xl font-bold text-yellow-400">0%</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-purple-600/20 to-purple-800/20 border border-purple-600/50 rounded-xl p-4 text-center hover:scale-105 transition">
+                            <div class="text-gray-300 text-sm font-semibold mb-1">📷 Status</div>
+                            <div id="cameraStatus" class="text-xl font-bold text-purple-400">Ready</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Current Model Info -->
+                    <div class="mt-4 bg-gradient-to-r from-purple-600/10 to-blue-600/10 border border-purple-500/30 rounded-xl p-3">
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-gray-400">Active Model:</div>
+                            <div id="currentModelDisplay" class="text-sm font-bold text-purple-400">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emote Panel (Right Side - 1/3) -->
+            <div class="space-y-6">
+                <!-- Current Emote -->
+                <div class="bg-gray-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-gray-700">
+                    <h3 class="text-xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">Current Emote</h3>
+                    <div class="bg-gradient-to-br from-gray-700/50 to-gray-800/50 rounded-xl p-6 text-center border border-gray-600">
+                        <div class="mb-4 flex items-center justify-center" style="height: 200px;">
+                            <img id="currentEmoteImage" src="" alt="No emote" class="hidden max-h-full max-w-full object-contain rounded-lg shadow-lg">
+                            <div id="currentEmoteEmoji" class="text-8xl">🎭</div>
+                        </div>
+                        <div id="currentEmoteName" class="text-2xl font-bold text-gray-300">No Pose</div>
+                        <div id="currentEmoteConfidence" class="text-sm text-gray-400 mt-2">Waiting for detection...</div>
+                    </div>
+                </div>
+
+                <!-- Available Emotes -->
+                <div class="bg-gray-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-gray-700">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold bg-gradient-to-r from-blue-400 to-cyan-500 bg-clip-text text-transparent">Available Emotes</h3>
+                        <button onclick="loadEmotesGrid()" class="text-sm text-blue-400 hover:text-blue-300">
+                            🔄 Refresh
+                        </button>
+                    </div>
+                    <div id="emotesGrid" class="grid grid-cols-2 gap-3 max-h-96 overflow-y-auto">
+                        <!-- Emotes will be loaded dynamically -->
+                        <div class="col-span-2 text-center py-8 text-gray-400">
+                            Loading emotes...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notificationContainer" class="fixed top-20 right-4 z-50 space-y-2"></div>
+
+    <!-- Keyboard Shortcuts Help Panel (Hidden by default) -->
+    <div id="helpPanel" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center">
+        <div class="bg-gray-800 rounded-2xl p-8 max-w-2xl mx-4 border border-gray-700 shadow-2xl">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">⌨️ Keyboard Shortcuts</h2>
+                <button onclick="toggleHelp()" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4 text-sm">
+                <div class="bg-gray-700/50 rounded-lg p-3">
+                    <kbd class="px-2 py-1 bg-gray-900 rounded text-blue-400 font-mono">Space</kbd>
+                    <span class="ml-2 text-gray-300">Toggle Camera</span>
+                </div>
+                <div class="bg-gray-700/50 rounded-lg p-3">
+                    <kbd class="px-2 py-1 bg-gray-900 rounded text-blue-400 font-mono">M</kbd>
+                    <span class="ml-2 text-gray-300">Mute/Unmute Audio</span>
+                </div>
+                <div class="bg-gray-700/50 rounded-lg p-3">
+                    <kbd class="px-2 py-1 bg-gray-900 rounded text-blue-400 font-mono">C</kbd>
+                    <span class="ml-2 text-gray-300">Switch Camera</span>
+                </div>
+                <div class="bg-gray-700/50 rounded-lg p-3">
+                    <kbd class="px-2 py-1 bg-gray-900 rounded text-blue-400 font-mono">?</kbd>
+                    <span class="ml-2 text-gray-300">Show This Help</span>
+                </div>
+                <div class="bg-gray-700/50 rounded-lg p-3">
+                    <kbd class="px-2 py-1 bg-gray-900 rounded text-blue-400 font-mono">1-4</kbd>
+                    <span class="ml-2 text-gray-300">Quick Model Switch</span>
+                </div>
+                <div class="bg-gray-700/50 rounded-lg p-3">
+                    <kbd class="px-2 py-1 bg-gray-900 rounded text-blue-400 font-mono">Esc</kbd>
+                    <span class="ml-2 text-gray-300">Close Help</span>
+                </div>
+            </div>
+            
+            <div class="mt-6 text-center text-gray-400 text-xs">
+                Press <kbd class="px-2 py-1 bg-gray-900 rounded text-blue-400 font-mono">?</kbd> anytime to show shortcuts
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Help Button (Bottom Right) -->
+    <button onclick="toggleHelp()" class="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-2xl transition transform hover:scale-110 z-40">
+        <span class="text-2xl">?</span>
+    </button>
+
+    <!-- Audio Element (kept for backward compatibility) -->
+    <audio id="audioPlayer" preload="auto"></audio>
+
+    <script src="{{ url_for('static', filename='js/audio-manager.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

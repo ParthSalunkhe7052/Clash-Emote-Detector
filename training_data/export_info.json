@@ -1,0 +1,24 @@
+{
+  "timestamp": "2025-10-29 22:16:37",
+  "total_samples": 1050,
+  "samples_per_emote": {
+    "0": 150,
+    "1": 150,
+    "2": 150,
+    "3": 150,
+    "4": 150,
+    "5": 150,
+    "6": 150
+  },
+  "data_directory": "C:\\Users\\parth\\OneDrive\\Desktop\\Clash Emote Detector+\\training_data",
+  "emote_mapping": {
+    "0": "laughing",
+    "1": "yawning",
+    "2": "crying",
+    "3": "taunting",
+    "4": "arms_folded_laughing",
+    "5": "hands_chest_kissing",
+    "6": "hands_raised_screaming"
+  },
+  "ready_for_training": true
+}

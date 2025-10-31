@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Capture - Clash Emote Detector</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* Smooth animations */
+        @keyframes pulse-border {
+            0%, 100% { border-color: rgb(59, 130, 246); }
+            50% { border-color: rgb(96, 165, 250); }
+        }
+        
+        .capturing {
+            animation: pulse-border 1s ease-in-out infinite;
+        }
+        
+        @keyframes slide-in {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .notification {
+            animation: slide-in 0.3s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 text-white min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-gray-800/80 backdrop-blur-sm border-b border-gray-700 sticky top-0 z-50">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-4">
+                    <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">🎮 Clash Emote Detector+</h1>
+                </div>
+                <div class="flex space-x-1">
+                    <a href="/" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition">📷 Camera</a>
+                    <a href="/emotes" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition">🎨 Manage Emotes</a>
+                    <a href="/capture" class="px-4 py-2 bg-blue-600 text-white rounded-lg shadow-lg">📸 Collect Data</a>
+                    <a href="/settings" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition">⚙️ Settings</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Camera Preview (Left - 2/3) -->
+            <div class="lg:col-span-2">
+                <div class="bg-gray-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-gray-700">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-2xl font-bold">📷 Camera Preview</h2>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm text-gray-400">Camera:</span>
+                            <span id="cameraIndex" class="text-sm font-bold text-blue-400">-</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Camera Feed -->
+                    <div class="relative bg-black rounded-xl overflow-hidden shadow-inner" style="aspect-ratio: 16/9;">
+                        <img id="videoFeed" src="{{ url_for('capture_feed') }}" 
+                             class="w-full h-full object-contain" 
+                             alt="Camera feed">
+                        
+                        <!-- Capture Status Overlay -->
+                        <div id="captureStatus" class="hidden absolute top-4 left-4 bg-blue-600/90 backdrop-blur-sm px-4 py-2 rounded-lg shadow-lg">
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 bg-white rounded-full animate-pulse"></div>
+                                <span class="font-bold">Capturing...</span>
+                                <span id="captureCount" class="font-mono">0/150</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Selected Emote Indicator -->
+                        <div id="emoteIndicator" class="absolute bottom-4 left-4 bg-gray-800/90 backdrop-blur-sm px-4 py-2 rounded-lg shadow-lg">
+                            <div class="text-sm text-gray-400">Selected:</div>
+                            <div id="selectedEmoteName" class="text-lg font-bold">None</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Stats -->
+                    <div class="mt-4 grid grid-cols-3 gap-4">
+                        <div class="bg-gradient-to-br from-blue-600/20 to-blue-800/20 border border-blue-600/50 rounded-xl p-4 text-center">
+                            <div class="text-gray-300 text-sm font-semibold mb-1">Total Collected</div>
+                            <div id="totalSamples" class="text-3xl font-bold text-blue-400">0</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-green-600/20 to-green-800/20 border border-green-600/50 rounded-xl p-4 text-center">
+                            <div class="text-gray-300 text-sm font-semibold mb-1">Current Emote</div>
+                            <div id="currentProgress" class="text-3xl font-bold text-green-400">0/150</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-purple-600/20 to-purple-800/20 border border-purple-600/50 rounded-xl p-4 text-center">
+                            <div class="text-gray-300 text-sm font-semibold mb-1">Completion</div>
+                            <div id="overallCompletion" class="text-3xl font-bold text-purple-400">0%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Control Panel (Right - 1/3) -->
+            <div class="space-y-6">
+                <!-- Emote Selector -->
+                <div class="bg-gray-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-gray-700">
+                    <h3 class="text-xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">Select Emote</h3>
+                    <div id="emoteGrid" class="space-y-2">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Capture Controls -->
+                <div class="bg-gray-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-gray-700">
+                    <h3 class="text-xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-cyan-500 bg-clip-text text-transparent">Controls</h3>
+                    
+                    <!-- Start/Stop Button -->
+                    <button id="captureBtn" 
+                            onclick="toggleCapture()"
+                            class="w-full py-4 px-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold text-lg rounded-xl shadow-lg transition transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none mb-4">
+                        <span id="captureBtnText">START CAPTURE</span>
+                    </button>
+                    
+                    <!-- Progress Bar -->
+                    <div class="mb-4">
+                        <div class="flex justify-between text-sm text-gray-400 mb-2">
+                            <span>Progress</span>
+                            <span id="progressPercent">0%</span>
+                        </div>
+                        <div class="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
+                            <div id="progressBar" class="bg-gradient-to-r from-blue-500 to-purple-500 h-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Export Button -->
+                    <button onclick="exportDataset()"
+                            class="w-full py-3 px-6 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold rounded-xl shadow-lg transition transform hover:scale-105">
+                        📦 EXPORT DATASET
+                    </button>
+                    
+                    <!-- Keyboard Shortcuts -->
+                    <div class="mt-4 p-3 bg-gray-700/50 rounded-lg">
+                        <div class="text-xs text-gray-400 mb-2 font-semibold">Keyboard Shortcuts:</div>
+                        <div class="text-xs text-gray-300 space-y-1">
+                            <div><kbd class="bg-gray-600 px-2 py-1 rounded">Space</kbd> Start/Stop</div>
+                            <div><kbd class="bg-gray-600 px-2 py-1 rounded">1-7</kbd> Select Emote</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Instructions -->
+                <div class="bg-gradient-to-br from-yellow-600/20 to-orange-700/20 border border-yellow-600/50 rounded-2xl p-6 shadow-2xl">
+                    <h3 class="text-lg font-bold mb-3 text-yellow-400">📋 Quick Guide</h3>
+                    <ol class="text-sm text-gray-300 space-y-2 list-decimal list-inside">
+                        <li>Select an emote from the list</li>
+                        <li>Position yourself in frame</li>
+                        <li>Click START or press Space</li>
+                        <li>Hold the pose for ~30 seconds</li>
+                        <li>Repeat for all 7 emotes</li>
+                        <li>Export dataset when complete</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notificationContainer" class="fixed top-20 right-4 z-50 space-y-2"></div>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script>
+        // Initialize Socket.IO
+        const socket = io();
+        
+        // State
+        let isCapturing = false;
+        let selectedEmote = null;
+        let progress = {
+            samples_collected: {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0},
+            target_per_emote: 150,
+            total_samples: 0
+        };
+        
+        // Emote definitions
+        const emotes = [
+            { id: 0, name: "Laughing", image: "laughing.png", color: "yellow" },
+            { id: 1, name: "Yawning", image: "yawning.png", color: "blue" },
+            { id: 2, name: "Crying", image: "crying.png", color: "cyan" },
+            { id: 3, name: "Taunting", image: "taunting.png", color: "purple" },
+            { id: 4, name: "Arms Folded", image: "arms_folded_laughing.png", color: "red" },
+            { id: 5, name: "Hands Chest Kiss", image: "hands_chest_kissing.png", color: "pink" },
+            { id: 6, name: "Hands Raised Scream", image: "hands_raised_screaming.png", color: "green" }
+        ];
+        
+        // Initialize
+        function init() {
+            renderEmoteGrid();
+            loadProgress();
+            
+            // Socket listeners
+            socket.on('capture_progress', (data) => {
+                updateProgress(data);
+            });
+            
+            socket.on('capture_complete', (data) => {
+                showNotification(`✅ Completed ${emotes[data.emote_id].name}!`, 'success');
+                isCapturing = false;
+                updateCaptureButton();
+            });
+            
+            socket.on('camera_info', (data) => {
+                document.getElementById('cameraIndex').textContent = data.camera_index;
+            });
+        }
+        
+        // Render emote selection grid
+        function renderEmoteGrid() {
+            const grid = document.getElementById('emoteGrid');
+            grid.innerHTML = emotes.map(emote => {
+                const count = progress.samples_collected[emote.id] || 0;
+                const target = progress.target_per_emote;
+                const percent = Math.min(100, (count / target) * 100);
+                const isComplete = count >= target;
+                const isSelected = selectedEmote === emote.id;
+                
+                return `
+                    <button onclick="selectEmote(${emote.id})" 
+                            class="w-full p-4 rounded-xl border-2 transition transform hover:scale-102 ${
+                                isSelected ? 'border-blue-500 bg-blue-600/20' : 
+                                isComplete ? 'border-green-500 bg-green-600/20' : 
+                                'border-gray-600 bg-gray-700/50 hover:border-gray-500'
+                            }">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-2">
+                                <img src="/images/${emote.image}" alt="${emote.name}" class="emote-icon w-12 h-12 object-contain rounded">
+                                <span class="font-bold">${emote.name}</span>
+                            </div>
+                            ${isComplete ? '<span class="text-green-400">✓</span>' : ''}
+                        </div>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-400">${count}/${target}</span>
+                            <span class="text-gray-400">${Math.round(percent)}%</span>
+                        </div>
+                        <div class="w-full bg-gray-600 rounded-full h-1.5 mt-2">
+                            <div class="bg-gradient-to-r from-blue-500 to-purple-500 h-full rounded-full transition-all" 
+                                 style="width: ${percent}%"></div>
+                        </div>
+                    </button>
+                `;
+            }).join('');
+        }
+        
+        // Select emote
+        function selectEmote(emoteId) {
+            if (isCapturing) {
+                showNotification('⚠️ Stop current capture first', 'warning');
+                return;
+            }
+            
+            selectedEmote = emoteId;
+            const emote = emotes[emoteId];
+            
+            document.getElementById('selectedEmoteName').textContent = emote.name;
+            document.getElementById('captureBtn').disabled = false;
+            
+            renderEmoteGrid();
+            updateStats();
+        }
+        
+        // Toggle capture
+        function toggleCapture() {
+            if (selectedEmote === null) {
+                showNotification('⚠️ Select an emote first', 'warning');
+                return;
+            }
+            
+            if (isCapturing) {
+                stopCapture();
+            } else {
+                startCapture();
+            }
+        }
+        
+        // Start capture
+        function startCapture() {
+            fetch('/api/start_capture', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ emote_id: selectedEmote })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    isCapturing = true;
+                    updateCaptureButton();
+                    document.getElementById('captureStatus').classList.remove('hidden');
+                    showNotification(`🎬 Capturing ${emotes[selectedEmote].name}`, 'info');
+                } else {
+                    showNotification('❌ Failed to start capture', 'error');
+                }
+            });
+        }
+        
+        // Stop capture
+        function stopCapture() {
+            fetch('/api/stop_capture', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                isCapturing = false;
+                updateCaptureButton();
+                document.getElementById('captureStatus').classList.add('hidden');
+                showNotification('⏹️ Capture stopped', 'info');
+            });
+        }
+        
+        // Update capture button
+        function updateCaptureButton() {
+            const btn = document.getElementById('captureBtn');
+            const text = document.getElementById('captureBtnText');
+            
+            if (isCapturing) {
+                btn.classList.remove('from-blue-600', 'to-blue-700');
+                btn.classList.add('from-red-600', 'to-red-700', 'capturing');
+                text.textContent = 'STOP CAPTURE';
+            } else {
+                btn.classList.remove('from-red-600', 'to-red-700', 'capturing');
+                btn.classList.add('from-blue-600', 'to-blue-700');
+                text.textContent = 'START CAPTURE';
+            }
+        }
+        
+        // Update progress
+        function updateProgress(data) {
+            progress = data;
+            
+            // Update capture count
+            if (selectedEmote !== null) {
+                const count = progress.samples_collected[selectedEmote];
+                document.getElementById('captureCount').textContent = `${count}/${progress.target_per_emote}`;
+                
+                const percent = (count / progress.target_per_emote) * 100;
+                document.getElementById('progressBar').style.width = percent + '%';
+                document.getElementById('progressPercent').textContent = Math.round(percent) + '%';
+            }
+            
+            renderEmoteGrid();
+            updateStats();
+        }
+        
+        // Update statistics
+        function updateStats() {
+            const total = Object.values(progress.samples_collected).reduce((a, b) => a + b, 0);
+            const target = progress.target_per_emote * 7;
+            const completion = Math.round((total / target) * 100);
+            
+            document.getElementById('totalSamples').textContent = total;
+            document.getElementById('overallCompletion').textContent = completion + '%';
+            
+            if (selectedEmote !== null) {
+                const count = progress.samples_collected[selectedEmote];
+                document.getElementById('currentProgress').textContent = `${count}/${progress.target_per_emote}`;
+            }
+        }
+        
+        // Load progress from server
+        function loadProgress() {
+            fetch('/api/capture_progress')
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    updateProgress(data);
+                }
+            });
+        }
+        
+        // Export dataset
+        function exportDataset() {
+            fetch('/api/export_dataset', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(`📦 Exported ${data.total_samples} samples!`, 'success');
+                } else {
+                    showNotification('❌ Export failed', 'error');
+                }
+            });
+        }
+        
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const colors = {
+                success: 'bg-green-600',
+                error: 'bg-red-600',
+                warning: 'bg-yellow-600',
+                info: 'bg-blue-600'
+            };
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${colors[type]} text-white px-6 py-4 rounded-xl shadow-2xl`;
+            notification.textContent = message;
+            
+            document.getElementById('notificationContainer').appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateY(-10px)';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Space - toggle capture
+            if (e.code === 'Space' && selectedEmote !== null) {
+                e.preventDefault();
+                toggleCapture();
+            }
+            
+            // 1-7 - select emote
+            const num = parseInt(e.key);
+            if (num >= 1 && num <= 7 && !isCapturing) {
+                selectEmote(num - 1);
+            }
+        });
+        
+        // Initialize on load
+        init();
+        
+        // Poll progress every 500ms while capturing
+        setInterval(() => {
+            if (isCapturing) {
+                loadProgress();
+            }
+        }, 500);
+        
+        console.log('🚀 Data Capture Module initialized');
+    </script>
+</body>
+</html>

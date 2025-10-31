@@ -1,0 +1,36 @@
+{
+  "version": "1.0.0",
+  "description": "Maps old model output labels to new canonical IDs",
+  "model_to_canonical": {
+    "Laughing": "laughing",
+    "Yawning": "yawning",
+    "Crying": "crying",
+    "Taunting": "taunting",
+    "Arms Folded Laughing": "e_wiz",
+    "Hands Chest Kissing": "kissing",
+    "Hands Raised Screaming": "screaming",
+    "laughing": "laughing",
+    "yawning": "yawning",
+    "crying": "crying",
+    "taunting": "taunting",
+    "arms_folded_laughing": "e_wiz",
+    "hands_chest_kissing": "kissing",
+    "hands_raised_screaming": "screaming",
+    "E Wiz": "e_wiz",
+    "Kissing": "kissing",
+    "Screaming": "screaming",
+    "e_wiz": "e_wiz",
+    "kissing": "kissing",
+    "screaming": "screaming"
+  },
+  "index_to_canonical": {
+    "0": "laughing",
+    "1": "yawning",
+    "2": "crying",
+    "3": "taunting",
+    "4": "e_wiz",
+    "5": "kissing",
+    "6": "screaming",
+    "7": "unknown"
+  }
+}
