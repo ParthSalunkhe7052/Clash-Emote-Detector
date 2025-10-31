@@ -72,7 +72,7 @@ The Clash Royale Emote Detector is a cutting-edge computer vision application th
 
 1. **Clone the repository**:
 ```bash
-git clone https://github.com/jasonli5/Clash-Emote-Detector.git
+git clone https://github.com/ParthSalunkhe7052/Clash-Emote-Detector.git
 cd Clash-Emote-Detector
 ```
 
@@ -456,16 +456,16 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Support & Community
 
 ### 🐛 Found a Bug?
-- [Open an issue](https://github.com/jasonli5/Clash-Emote-Detector/issues) on GitHub
+- [Open an issue](https://github.com/ParthSalunkhe7052/Clash-Emote-Detector/issues) on GitHub
 - Include error logs and steps to reproduce
 
 ### 💡 Have a Feature Request?
-- [Start a discussion](https://github.com/jasonli5/Clash-Emote-Detector/discussions)
+- [Start a discussion](https://github.com/ParthSalunkhe7052/Clash-Emote-Detector/discussions)
 - Describe your idea and use case
 
 ### 📧 Contact
 - **Email**: parth.ajit7052@gmail.com
-- **GitHub**: [@jasonli5](https://github.com/jasonli5)
+- **GitHub**: [@ParthSalunkhe7052](https://github.com/ParthSalunkhe7052)
 
 ### ⭐ Show Your Support
 If you like this project, please give it a ⭐ on GitHub!
