@@ -56,7 +56,9 @@ The Clash Royale Emote Detector is a cutting-edge computer vision application th
 
 ### 🎥 Demo Video
 
-> **Note**: A full demo video is available in `docs/demo-video.mp4` showing the emote detection system in action!
+> **[📹 Watch Full Demo Video](https://github.com/ParthSalunkhe7052/Clash-Emote-Detector/raw/main/docs/demo-video.mp4)** - Download and watch the complete emote detection system in action! (24.6 MB)
+
+*Click the link above to download the demo video showing real-time gesture recognition.*
 
 ---
 
