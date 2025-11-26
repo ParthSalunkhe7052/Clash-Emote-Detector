@@ -1,6 +1,6 @@
 # 🎮 Clash Royale Emote Detector v2.2
 
-## Part 1: The Hook (For HR/Managers)
+
 
 **What is it?**
 A real-time AI application that lets you trigger Clash Royale emotes using body gestures.
@@ -16,7 +16,7 @@ This app uses your webcam to "watch" your movements. When you strike a pose (lik
 
 ---
 
-## Part 2: The Tech (For Developers/CTOs)
+## The Tech (For Developers/CTOs)
 
 **Tech Stack**
 *   **Core**: Python 3.7+
