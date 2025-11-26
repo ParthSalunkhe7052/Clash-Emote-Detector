@@ -1,8 +1,48 @@
 # 🎮 Clash Royale Emote Detector v2.2
 
-<div align="center">
+## Part 1: The Hook (For HR/Managers)
 
-**Real-time gesture recognition system that detects Clash Royale emotes using pose estimation and deep learning.**
+**What is it?**
+A real-time AI application that lets you trigger Clash Royale emotes using body gestures.
+
+**The Problem**
+Streamers and gamers struggle to keep their audience engaged while playing; manually triggering sound effects or overlays breaks their flow and focus.
+
+**The Solution**
+This app uses your webcam to "watch" your movements. When you strike a pose (like a laugh or a cry), it instantly plays the matching Clash Royale emote and sound. It's hands-free, instant, and fun.
+
+**Example**
+"Instead of 'A computer vision project,' say 'An interactive engagement tool that turns a streamer's body language into live content, increasing viewer interaction without interrupting gameplay.'"
+
+---
+
+## Part 2: The Tech (For Developers/CTOs)
+
+**Tech Stack**
+*   **Core**: Python 3.7+
+*   **AI/ML**: PyTorch (Neural Networks), MediaPipe (Pose Estimation), OpenCV, scikit-learn.
+*   **Backend**: Flask, Flask-SocketIO.
+*   **Frontend**: HTML5, Vanilla JavaScript, TailwindCSS.
+
+**Architecture**
+The application follows a real-time client-server architecture:
+1.  **Input**: The webcam feed is processed frame-by-frame.
+2.  **Processing**: MediaPipe extracts 33 body landmarks and hand data. These landmarks are normalized into feature vectors (128-D).
+3.  **Inference**: A PyTorch neural network classifies the pose in real-time.
+4.  **Output**: The backend sends the predicted emote event via WebSockets (Socket.IO) to the frontend, which triggers the corresponding audio and visual feedback.
+
+**Installation**
+Run locally in 3 steps:
+
+1.  **Clone**: `git clone https://github.com/ParthSalunkhe7052/Clash-Emote-Detector.git`
+2.  **Setup**: Run `setup.bat` (Windows) to install dependencies.
+3.  **Run**: Execute `run.bat` and open `http://localhost:5000`.
+
+---
+
+## 📚 Full Documentation
+
+<div align="center">
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.7%2B-blue)](https://www.python.org/)
@@ -10,7 +50,7 @@
 [![PyTorch](https://img.shields.io/badge/pytorch-2.0%2B-orange)](https://pytorch.org/)
 [![MediaPipe](https://img.shields.io/badge/mediapipe-0.10%2B-red)](https://mediapipe.dev/)
 
-[Features](#-key-features) • [Demo](#-demo) • [Installation](#-quick-start) • [Usage](#-usage-guide) • [Documentation](#-documentation)
+[Features](#-key-features) • [Demo](#-demo) • [Usage](#-usage-guide) • [AI Models](#-ai-models)
 
 </div>
 
